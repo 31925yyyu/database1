@@ -86,3 +86,4 @@ AND dname LIKE '%C%' AND category >= 4;
 (So if the salary is 1800 then print -> '##', because 1800 rounded to thousands is 2.)
 -- Take care of rpad function. rpad('', 3, 'x') = rpad(null, 3, 'x')
 SELECT ename, sal, rpad('#', round(sal, -3)/1000, '#') FROM emp;
+
