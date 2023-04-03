@@ -1,5 +1,3 @@
-# database1
-
 Databases I. Lecture and Practice group 1 and 4
 ===============================================
 
@@ -84,6 +82,7 @@ Creating Views. (SQL11_view.pdf, view_example.txt)
 
 5th practice
 ------------
+Subqueries cont. (SQL08*.pdf). Creating Views. (SQL11_view.pdf, view_example.txt)
 Complex queries expressed in relational algebra, extended relational algebra and SQL.
 Rewriting SQL into relational algebra and vica versa.
 Computing the result of relational algebra expressions (RelaX).
@@ -111,7 +110,7 @@ Basic elements of the language, examples. See -> PLSQL directory on homepage
 https://people.inf.elte.hu/nikovits/DB1/PLSQL/
 (Overview, basics, SQL_stmt, control_stmt, collection.)
 
-7th practice  --> Midterm test (Exact date will be announced here.)
+7th practice  --> Midterm test (Exact date: 2023.04.17)
 ------------
 Exercise types in the test: 
 relational algebra, SQL Select, Insert, Delete, Update, Built-in functions, join, grouping, aggregation, subqueries
@@ -182,3 +181,5 @@ In the endterm test there will be only PL/SQL procedures and functions.
 You have to do 2 exercises for grade 2, 3 exercises for grade 3 ... etc. 
 I will take one exercise from db1_exercise7 ... db1_exercise10 on my homepage. 
 So it is worth doing them all !!!
+
+
