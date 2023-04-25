@@ -1,0 +1,114 @@
+create or replace FUNCTION prim(n integer) RETURN number IS
+ ret_val NUMBER(1) := 1;
+ v_limit NUMBER(38);
+BEGIN
+ IF n < 0 OR trunc(n) <> n THEN RETURN -1; END IF;
+  v_limit := trunc(sqrt(n));
+  FOR i IN 2..v_limit loop
+  IF mod(n, i) = 0 THEN ret_val := 0; exit; END IF;
+ END loop;
+ RETURN ret_val;
+END;
+/
+
+SELECT prim(26388279066623) from dual;
+
+create or replace PROCEDURE fib(n integer) IS
+ v1  integer := 0;
+ v2  integer := 1;
+ v_next integer := 0;
+BEGIN
+  IF n <= 1 THEN v_next:=v1; ELSIF n=2 THEN v_next:=v2; END IF; 
+  FOR i IN 3 .. n LOOP
+    v_next := v1+v2;
+    v1 := v2; v2 := v_next; 
+  END LOOP;
+  DBMS_OUTPUT. PUT_LINE(TO_CHAR(v_next));
+END;
+/
+set serveroutput on
+execute fib(10); 
+call fib(10);
+
+CREATE OR REPLACE FUNCTION gcd(p1 integer, p2 integer) RETURN number IS
+ v1  integer := p1;
+ v2  integer := p2;
+ v_limit NUMBER(38);
+ BEGIN
+  WHILE MOD(v2, v1) != 0 LOOP 
+        v_limit := MOD(v2, v1);
+        v2 := v1;
+        v1 := v_limit;
+    END LOOP; 
+ RETURN v1;
+END;
+/
+
+SELECT gcd(3570,7293) FROM dual;
+
+CREATE OR REPLACE FUNCTION factor(n integer) RETURN integer IS
+ new_n integer := n;
+ v_limit NUMBER(38) := 1;
+BEGIN
+ while new_n > 0 loop  
+    v_limit := new_n * v_limit;        
+    new_n := new_n - 1;           
+ end loop;    
+ RETURN v_limit;
+END;
+/
+
+SELECT factor(10) FROM dual;
+
+CREATE OR REPLACE FUNCTION num_times(p1 VARCHAR2, p2 VARCHAR2) RETURN integer IS
+ len_p1 integer;
+ len_p2 integer;
+ len_p3 integer;
+BEGIN
+ len_p1 := LENGTH(p1);
+ len_p2 := nvl(length(replace(p1,p2)),0);
+ len_p3 := LENGTH(p2);
+ RETURN (len_p1-len_p2)/len_p3;
+END;
+/
+
+SELECT num_times ('ab c ab ab de ab fg', 'ab') FROM dual;
+
+
+/
+create or replace type strsplit_type as table of varchar2(4000) ;
+/
+create or replace function strsplit(p_value varchar2,
+                                    p_split varchar2 := ',')
+--usage: select * from table(strsplit('1,2,3,4,5'))
+ return strsplit_type
+  pipelined is
+  v_idx       integer;
+  v_str       varchar2(500);
+  v_strs_last varchar2(4000) := p_value;
+
+begin
+  loop
+    v_idx := instr(v_strs_last, p_split);
+    exit when v_idx = 0;
+    v_str       := substr(v_strs_last, 1, v_idx - 1);
+    v_strs_last := substr(v_strs_last, v_idx + 1);
+    pipe row(v_str);
+  end loop;
+  pipe row(v_strs_last);
+  return;
+
+end strsplit;
+/
+
+CREATE OR REPLACE FUNCTION sum_of(p_char VARCHAR2) RETURN number IS
+ n integer := 0;
+begin
+    select sum(to_number(COLUMN_VALUE)) into n from ( select * from table (strsplit(p_char,'+')));
+    return n;
+END;
+/
+
+SELECT sum_of('1 + 4 + 13 + 0') FROM dual;
+set serveroutput on
+execute check_plsql('sum_of(''1 + 4 + 13 + 0'')'); 
