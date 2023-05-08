@@ -1,0 +1,146 @@
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE OR REPLACE PROCEDURE proc_test IS
+  v VARCHAR2(20);
+BEGIN
+  UPDATE emp e1 SET sal = sal + (SELECT avg(sal) FROM emp e2 WHERE e2.deptno = e1.deptno)
+  WHERE empno NOT IN (SELECT coalesce(mgr,0) FROM emp);
+
+  SELECT to_char(avg(sal),'9999.99') INTO v FROM emp
+  WHERE empno NOT IN (SELECT coalesce(mgr,0) FROM emp);
+  dbms_output.put_line(v);
+  ROLLBACK;  -- to save the original content of the table, if you want to run again the procedure
+END;
+/
+set serveroutput on
+call proc_test();
+
+
+
+//////////////////////////////////////////////////////////////
+
+CREATE OR REPLACE FUNCTION cat_avg(p_category integer) RETURN number IS
+    v number;
+BEGIN
+    select avg(sal) INTO v from emp, sal_cat where sal between lowest_sal and highest_sal group by category
+    having category = 2;
+    return v;
+END;
+/
+
+SELECT cat_avg(2) FROM dual;
+set serveroutput on
+execute check_plsql('cat_avg(2)'); 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE OR REPLACE PROCEDURE day_avg(d varchar2) IS
+  v number;
+  v1 number;
+BEGIN
+  select avg(sal), count(ename) into v, v1 from emp where trim(to_char(hiredate,'Day')) = d;
+  dbms_output.put_line('Numberofemps:'||v1);
+  dbms_output.put_line(',Ave:'||v);
+END;
+/
+set serveroutput on
+execute day_avg('Thursday');
+execute check_plsql('day_avg(''Thursday'')'); 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE OR REPLACE PROCEDURE print_jobs(d_name varchar2) IS
+    cursor jobs is select emp.job from emp natural join dept where dname = d_name order by ename ASC;
+    s VARCHAR2(50) := '';
+    s1 VARCHAR2(50) := '';
+begin
+    for one_job in jobs loop
+        select concat(concat(s, one_job.job),'-') into s from dual;
+    end loop;
+    SELECT SUBSTR(s, 0, LENGTH(s) - 1) into s1 FROM dual;
+    dbms_output.put_line(s1);
+end;
+/
+set serveroutput on
+call print_jobs('ACCOUNTING');
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE OR REPLACE PROCEDURE primes(n integer) IS
+    TYPE arr IS TABLE OF number INDEX BY binary_integer;
+    primeArr arr;
+    summ integer := 0;
+    w integer := 2;
+begin
+    for i in 1..n loop
+        while (prim(w) = 0) loop
+            w := w + 1;
+        end loop;
+        primeArr(i) := w;
+        summ := summ + primeArr(i);
+        w := w + 1;
+    end loop;
+    dbms_output.put_line(primeArr(n)||'-'||summ);
+--    dbms_output.put_line(summ);
+end;
+/
+set serveroutput on
+execute primes(100);
+execute check_plsql('primes(100)'); 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE OR REPLACE PROCEDURE curs_array IS
+    counter integer := 1;
+    ind integer := 1;
+    type TRecord is record (ename emp.ename%TYPE default '', sal emp.sal%TYPE default 0);
+    tr TRecord;
+    cursor c is select ename, sal from emp order by ename asc;
+    type TableType is table of TRecord index by binary_Integer;
+    tt TableType;
+begin
+    for c_tmp in c loop
+        if(mod(counter, 2) = 1) then
+            tt(ind).ename := c_tmp.ename;
+            tt(ind).sal := c_tmp.sal;
+            ind := ind + 1;
+        end if;
+        counter := counter + 1;
+    end loop;
+    --dbms_output.put_line('Name: '|| to_char(tt(ind-2).ename));
+    --dbms_output.put_line('Sal: ' || to_char(tt(ind-2).sal));
+    dbms_output.put_line(to_char(tt(ind-2).ename) || '-' || to_char(tt(ind-2).sal));
+end;
+/
+execute check_plsql('curs_array()'); 
+set serveroutput on
+execute curs_array();
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE OR REPLACE PROCEDURE upd_cat(p integer) IS
+    avg_sal number;
+begin
+    update emp2 e1
+    set sal = sal + (
+        select min(sal)
+        from emp2 e2
+        where e2.deptno = e1.deptno
+    )
+    where e1.empno in (
+        select empno
+        from emp2 join sal_cat2 sc on emp2.sal between sc.lowest_sal and sc.highest_sal
+        where sc.category = p
+    );
+    select avg(sal) into avg_sal
+    from emp2;
+    
+    dbms_output.put_line('Avg sal : ' || avg_sal);     
+    Rollback;
+end;
+/
+
+set serveroutput on
+execute upd_cat(2);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
