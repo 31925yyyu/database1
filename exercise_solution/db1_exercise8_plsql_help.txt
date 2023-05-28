@@ -23,7 +23,7 @@ CREATE OR REPLACE FUNCTION cat_avg(p_category integer) RETURN number IS
     v number;
 BEGIN
     select avg(sal) INTO v from emp, sal_cat where sal between lowest_sal and highest_sal group by category
-    having category = 2;
+    having category = p_category;
     return v;
 END;
 /
