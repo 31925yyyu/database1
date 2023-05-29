@@ -1,0 +1,126 @@
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+create or replace function getCountOfVowels(wordd varchar2) return integer is
+    cnt integer := 0;
+    tmp varchar2(50);
+begin
+    for i in 1..length(wordd) loop
+        SELECT SUBSTR(wordd, i, 1) into tmp FROM dual;
+        if(tmp = 'A' or tmp = 'E' or tmp = 'I' or tmp = 'O' or tmp = 'U') then
+            cnt := cnt + 1;
+        end if;
+    end loop;
+    return cnt;
+end;
+/
+
+CREATE OR REPLACE PROCEDURE curs_upd(p_deptno INTEGER) IS
+    CURSOR c_emp IS SELECT ename, sal FROM emp 
+        WHERE p_deptno = deptno order by sal asc FOR UPDATE OF sal;
+    TSal number;
+    TName varchar2(50);
+begin
+    FOR r_emp IN c_emp loop
+        select r_emp.ename, r_emp.sal into TName, TSal from emp where emp.ename = r_emp.ename;
+        TSal := TSal + getCountOfVowels(r_emp.ename) * 10000;
+        update emp set sal = sal + TSal where emp.ename = r_emp.ename;
+        dbms_output.put(TName||'-'||TSal);
+    end loop;
+    dbms_output.new_line;
+    rollback;
+end;
+/
+
+set serveroutput on
+execute curs_upd(10);
+execute check_plsql('curs_upd(10)'); 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ALTER SESSION SET NLS_DATE_LANGUAGE='English';
+
+CREATE OR REPLACE FUNCTION day_name(d varchar2) RETURN varchar2 IS
+    DDate date;
+    st varchar2(50);
+begin
+    begin
+        select to_date(d, 'yyyy.mm.dd') into DDate from dual;
+        select to_char(DDate, 'Day') into st from dual;
+        return st;
+    EXCEPTION
+        WHEN others THEN
+           select to_date(d, 'dd.mm.yyyy') into DDate from dual;
+           select to_char(DDate, 'Day') into st from dual;
+           return st; 
+    end;
+EXCEPTION
+    WHEN others THEN
+           return 'wrong format'; 
+end;
+/
+
+SELECT day_name('2017.05.01'), day_name('02.05.2017'), day_name('abc') FROM dual;
+execute check_plsql('day_name(''2017.05.01'')');
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE OR REPLACE PROCEDURE numbers(n number) IS
+    reciprocalResult number := 0;
+    sqarerootResult number := 0;
+    factorialResult number := 1;
+begin
+    begin
+        begin
+            select 1 / n into reciprocalResult from dual;
+            dbms_output.put_line(reciprocalResult);
+        EXCEPTION
+            WHEN OTHERS THEN
+                dbms_output.put_line('not defined');
+        end;
+        select sqrt(n) into sqarerootResult from dual;
+        dbms_output.put_line(sqarerootResult);
+    EXCEPTION
+        WHEN OTHERS THEN
+            dbms_output.put_line('not defined');
+    end;
+    if(n < 0) then
+        dbms_output.put_line('not defined');
+    else
+        for i in 1..n loop
+            factorialResult := factorialResult * i;
+        end loop;
+        dbms_output.put_line(factorialResult);
+    end if;
+end;
+/
+
+set serveroutput on
+execute numbers(0);
+execute numbers(-2);
+execute numbers(40);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE OR REPLACE FUNCTION sum_of2(p_char VARCHAR2) RETURN number IS
+    summ number := 0;
+    tmp varchar2(50);
+--    flag number := 0;
+begin
+    for i in 1..length(p_char) loop
+        SELECT SUBSTR(p_char, i, 1) into tmp FROM dual;
+        if(tmp = '+' or tmp = ' ') then
+            summ := summ + 0;
+            else
+            summ := summ + tmp;
+        end if;
+    end loop;
+    return summ;
+end;
+/
+SELECT sum_of2('1+21 + bubu + + 2 ++') FROM dual;
+SELECT sum_of2('1+21 + 4 + + 2 ++') FROM dual;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
