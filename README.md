@@ -1,5 +1,5 @@
-Databases I. Lecture and Practice group 1 and 4
-===============================================
+Databases I. Lecture and Practice group
+=========================================
 
 Before the 1st lecture 
 ----------------------
