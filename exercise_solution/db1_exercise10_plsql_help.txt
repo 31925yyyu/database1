@@ -1,0 +1,94 @@
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CREATE OR REPLACE PROCEDURE rich_descendant IS
+    countt integer :=0;
+begin
+    for rec in (select name ,parent, money from parentof) loop
+        select count(*) into countt from
+        (select money from parentof
+        start with parentof.name = rec.name
+        connect by NOCYCLE prior parentof.name = parentof.parent) tmp
+        where tmp.money > rec.money; 
+        if(countt > 0) then
+            dbms_output.put_line(rec.name);
+        end if;
+    end loop;
+end;
+/
+
+set serveroutput on
+execute rich_descendant();
+execute check_plsql('rich_descendant()');
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+CREATE OR REPLACE PROCEDURE rich_avg_descendant IS
+    averageMoney integer :=0;
+begin
+    for rec in (select name, parent, money from parentof) loop
+        select avg(money) into averageMoney from 
+        (select name, money from parentof
+        start with parentof.name = rec.name
+        connect by NOCYCLE prior parentof.name = parentof.parent) tmp
+        where tmp.name <> rec.name;
+        if(averageMoney > rec.money) then
+            dbms_output.put_line(rec.name||'-'||rec.money||'-'||averageMoney);
+        end if;
+    end loop;
+end;
+/
+
+set serveroutput on
+execute rich_avg_descendant();
+execute check_plsql('rich_avg_descendant()');
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+CREATE OR REPLACE PROCEDURE find_cycle(p_node VARCHAR2) IS
+    CURSOR res IS  
+    (select orig, dest, SYS_CONNECT_BY_PATH(orig,'-')||'-'||dest pa,
+    CONNECT_BY_ROOT(orig), connect_by_iscycle from flight 
+    start with orig = p_node
+    connect by NOCYCLE prior dest=orig);
+begin
+   for c_res in res loop
+        if(c_res.dest = p_node) then
+            dbms_output.put_line(c_res.pa);
+        end if;
+   end loop;
+end;
+/
+
+set serveroutput on
+execute find_cycle('Denver');
+execute check_plsql('find_cycle(''Denver'')');
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+CREATE OR REPLACE PROCEDURE ancestor2 IS
+    CURSOR res IS 
+    (select name, city, SYS_CONNECT_BY_PATH(city,'-') pa from parentof
+    start with parentof.name = 'ADAM'
+    connect by NOCYCLE prior parentof.name = parentof.parent);
+    c integer := 0;
+begin
+    for r in res loop
+        select  REGEXP_COUNT(r.pa, r.city) into c from dual;
+        if(c >= 3) then
+            dbms_output.put_line(r.name||'-'||r.city);
+        end if;
+    end loop;
+end;
+/
+
+set serveroutput on
+execute ancestor2();
+--execute check_plsql('ancestor2()');
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
