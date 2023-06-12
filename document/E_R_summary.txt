@@ -1,0 +1,63 @@
+Entity-Relationship diagrams
+----------------------------
+When designing a database, we usually start with a higher-level model, then we convert it into relational model.
+Entity-relationship model (E/R model): the structure of data is represented graphically
+
+Entity is an abstract object, a collection of similar entities -> entity set
+Properties of the entities -> attributes
+Relationships are connections among two or more entity sets.
+E/R diagram:
+ Entity sets: rectangles
+ Attributes: ovals (connected to the rectangle)
+ Relationships: diamonds with lines to the connected entity sets
+
+Multiplicity of binary E/R relationships
+ many-one from E1 to E2: each member of E1 can be connected to at most one member of E2
+ one-one: each member can be connected to exactly one member (in both directions)
+ many-many: each member can be connected to one or more members (in both directions)
+Arrows can be used to indicate multiplicity: arrow means "at most one"
+Simple line means "one or more"
+Rounded arrow means "exactly one"
+
+Multiway relationships: relationships involving more than two entity sets
+ (We can introduce a new entity set, instead.)
+Roles in relationships: if one entity set appears two or more times in a relationship
+ (each line to the entity set represents a different role)
+Attributes on relationships
+ (we can invent a new entity set instead of it)
+Subclasses
+ A "is a" B
+Keys in the E/R model (any two distinct entities cannot have identical values for each attribute)
+ (we underline key attributes in E/R model)
+Referential integrity
+ (A value appearing in one entity set must also appear in another.)
+ --> rounded arrow means "exactly one"
+
+Weak entity set (rectangle with a double border)
+ If some key attributes belong to another entity set
+ A weak entity set has some supporting entity sets and supporting relationships. 
+ A supporting relationship is a binary, many-one relationship --> diamond with a double border
+
+Converting an E/R model to relational
+-------------------------------------
+- From each entity set --> we create a relation with the same set of attributes
+- relationship --> a relation whose attributes are the keys of the connected entity sets + attributes of the relationship
+  (sometimes we must rename attributes to avoid name duplication)
+- weak entity sets and subclasses need special handling
+- sometimes we combine two relations into one
+  (in case of a many-one relationship from E1 to E2: all attributes of E1, key attributes of E2, attributes of the relationship)
+
+Weak entity set (W)
+ relation for W: attributes of W + key attributes of the supporting entity sets
+ a supporting relationship need not be converted
+
+Subclass structures (3 methods)
+1. E/R viewpoint 
+   For each entity set E in the hierarchy, create a relation with key attributes from the root + attributes of E
+2. Object-oriented viewpoint
+   For each subtree, create a relation with all attributes of all entity sets in the subtree 
+3. NULL value viewpoint
+   One relation for the whole hierarchy with all attributes of all entity sets in the hierarchy
+   Each entity is represented by one tuple (NULL value for attributes which the entity doesn't have) 
+
+
